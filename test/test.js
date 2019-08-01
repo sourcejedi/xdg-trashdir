@@ -43,6 +43,21 @@ if (!process.env.CI) {
 		await execa(path.join(__dirname, 'mount_clean'), [name]);
 	});
 
+	test('get the trash path using a dangling symlink on a mounted drive', async t => {
+		const name = path.join(__dirname, 'test-disk2');
+		const dirname = path.join(name, '.Trash-') + process.getuid();
+
+		await execa(path.join(__dirname, 'mount_create'), [name]);
+
+		const filename = path.join(name, 'dangly');
+		fs.symlinkSync('nonexistent', filename);
+
+		const dir = await trashdir(filename);
+		t.is(dirname, dir);
+
+		await execa(path.join(__dirname, 'mount_clean'), [name]);
+	});
+
 	test('get the trash path on a mounted drive with a top trash', async t => {
 		const name = path.join(__dirname, 'test-disk-top');
 		const dirname = path.join(name, '.Trash', String(process.getuid()));
